@@ -6,9 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class IPQueryAddress {
-	public static void main(String[] args){
+	public static void main(String[] args) throws UnknownHostException{
 
 		
 //		IPQueryAddress.ipToIp32Str("121.0.0.7"); //01111001000000000000000000000111
@@ -26,15 +28,31 @@ public class IPQueryAddress {
 //		}  
 //		System.out.println(ip32Str);	
 //		IPQueryAddress.writeToFile();
-		IPQueryAddress.readToFile();
+//		IPQueryAddress.readToFile();
+//		byte a = 120;
+//		System.out.println(extend_uv(a));
+//		System.out.println(int2Byte(236));
+//		System.out.println(130<<24);
+
+		byte[] bytes = {-1,-1,-1,-1};
+		System.out.println(byteArr2Num_uv(bytes));
+		numStr2ByteArr_uv(byteArr2Num_uv(bytes)+"",4);
+		System.out.println(ip2NumStr("255.255.255.255"));
+
+//		System.out.println(bytes2Int(bytes));
+//		System.out.println();
+//		byte[] b = numStr2ByteArr("2030043143",4);
+
 	}
 	
-	//Ëæ»úÉú³É1000µ÷ipÊý¾Ý£¬²¢ÀûÓÃ¶þ½øÖÆ×ª»¯³ÉÊýÖµ×Ö·û´®½øÐÐÎÄ¼þ´æ´¢ip.txt
+	//éšæœºç”Ÿæˆ1000è°ƒipæ•°æ®ï¼Œå¹¶åˆ©ç”¨äºŒè¿›åˆ¶è½¬åŒ–æˆæ•°å€¼å­—ç¬¦ä¸²è¿›è¡Œæ–‡ä»¶å­˜å‚¨ip.txt
 	public static void randomIpData(){
-		
+//		for(){
+//			
+//		}
 	}
 	
-	//¶ÁÈ¡ipÎÄ¼þÖÐµÄipÊý¾Ý
+	//è¯»å–ipæ–‡ä»¶ä¸­çš„ipæ•°æ®
 	public static void writeToFile(){
 		File file = new File("d:/ip-data.dat");
 		try {
@@ -58,7 +76,7 @@ public class IPQueryAddress {
 			FileInputStream in = new FileInputStream(file);
 			byte[] bytes = new byte[4];
 			in.read(bytes);
-			BigInteger num = byteArr2NumStr(bytes);
+			BigInteger num = byteArr2Num(bytes);
 			in.close();
 			System.out.println(num.toString());
 		} catch (FileNotFoundException e) {
@@ -72,15 +90,15 @@ public class IPQueryAddress {
     
 	
 	
-	/**************************Ö÷ÒªºËÐÄ·½·¨***************************/
-    //½«¶þ½øÖÆµÄ(8/16/24/32/...)Î»³¤ÕûÐÎ×Ö·û´®×ªÎªÊ®½øÖÆÊýÖµ´®
+	/**************************ä¸»è¦æ ¸å¿ƒæ–¹æ³•***************************/
+    //å°†äºŒè¿›åˆ¶çš„(8/16/24/32/...)ä½é•¿æ•´å½¢å­—ç¬¦ä¸²è½¬ä¸ºåè¿›åˆ¶æ•°å€¼ä¸²
     public static BigInteger binaryStr2Num(String binaryStr){
     	BigInteger num = new BigInteger(binaryStr,2);
     	System.out.println("num:" + num);
     	return num;
     }
     
-    //½«Ê®½øÖÆµÄÊýÖµ´®×ª»¯Îª¶þ½øÖÆµÄ(8/16/24/32/...)Î»µÄ³¤ÕûÐÍ×Ö·û´®
+    //å°†åè¿›åˆ¶çš„æ•°å€¼ä¸²è½¬åŒ–ä¸ºäºŒè¿›åˆ¶çš„(8/16/24/32/...)ä½çš„é•¿æ•´åž‹å­—ç¬¦ä¸²
     public static String numStr2BinaryStr(String numStr,int i){
     	StringBuffer binaryStr = new StringBuffer("");
     	if(isNumeric(numStr)){
@@ -93,8 +111,9 @@ public class IPQueryAddress {
     	System.out.println("binaryStr:" + binaryStr);
     	return binaryStr.toString();
     }
+       
     
-    //ÅÐ¶Ï×Ö·û´®ÊÇ·ñÎÞ·ûºÅÕûÊý
+    //åˆ¤æ–­å­—ç¬¦ä¸²æ˜¯å¦æ— ç¬¦å·æ•´æ•°
     public final static boolean isNumeric(String s) {
 		if (s != null && !"".equals(s.trim()))
 			return s.matches("^[0-9]*$");
@@ -102,31 +121,40 @@ public class IPQueryAddress {
 			return false;
 	}
     
-   //ÍØÕ¹byteµÄ·¶Î§Îª0~255½øÐÐjavaÂß¼­µÄ´¦Àí
-    public static int extend(byte b){
-    	return (int)(b+128);
-    }
-    
-    //»Ö¸´byteµÄ·¶Î§Îª-128~127½øÐÐÎÄ¼þ´æ´¢
-    public static byte unextend(int i){
-    	if(i>255)i=255;
-    	if(i<0)i=0;
-    	return (byte)(i-128);
-    }
-    /**********************************************************************/ 
-    
+    /////////////////intå’Œ byteç›¸äº’è½¬æ¢ï¼Œå˜ç›¸çš„æ‹“å±•byteçš„å–å€¼èŒƒå›´//////////////////
+    //æ‹“å±•byteçš„èŒƒå›´ä¸º0~255è¿›è¡Œjavaé€»è¾‘çš„å¤„ç†
+     public static int extend(byte b){
+     	return (int)(b+128);
+     }
+     
+     //æ¢å¤byteçš„èŒƒå›´ä¸º-128~127è¿›è¡Œæ–‡ä»¶å­˜å‚¨
+     public static byte unextend(int i){
+     	if(i>255)i=255;
+     	if(i<0)i=0;
+     	return (byte)(i-128);
+     }
+     
+     //////////////////ç¬¬äºŒç§æ˜ å°„///////////////
+     //æ‹“å±•byteçš„èŒƒå›´ä¸º0~255è¿›è¡Œjavaé€»è¾‘çš„å¤„ç†--
+     private static int extend_uv(byte b) {
+ 	        return b & 0xFF;
+ 	}
+   //æ¢å¤byteçš„èŒƒå›´ä¸º-128~127è¿›è¡Œæ–‡ä»¶å­˜å‚¨
+ 	public static byte unextend_uv(int num) {
+ 	        return (byte) num;
+ 	}    
+    /////////////////////////////////////////////////////////////////////
    
     
     
-    
-    /*****************************ipÏà¹Ø¹¤¾ß·½·¨*********************************/
-    //½«¶þ½øÖÆµÄ32Î»³¤ÕûÐÎ×ª»¯Îªip´®
+    /*****************************ipç›¸å…³å·¥å…·æ–¹æ³•*********************************/
+    //å°†äºŒè¿›åˆ¶çš„32ä½é•¿æ•´å½¢è½¬åŒ–ä¸ºipä¸²
     public static String BinaryStr2Ip(String binaryStr){
     	StringBuffer ip = new StringBuffer();
-    	for(int m=0; m<binaryStr.toString().length(); m+=8){//Ã¿8Î»ÏòÇ°ÒÆ¶¯Ò»´Î            
-           String str = binaryStr.substring(m, m+8);//»ñÈ¡×Ö·û´®µÄ8Î»×Ö·û  
-           BigInteger bi = binaryStr2Num(str);//½«Æä×ª»¯ÎªÊ®½øÖÆ  
-           if(m!=24){//³ýÁË×îºóÒ»Î»£¬Êý×Öºó¶¼Òª¼Óµã               
+    	for(int m=0; m<binaryStr.toString().length(); m+=8){//æ¯8ä½å‘å‰ç§»åŠ¨ä¸€æ¬¡            
+           String str = binaryStr.substring(m, m+8);//èŽ·å–å­—ç¬¦ä¸²çš„8ä½å­—ç¬¦  
+           BigInteger bi = binaryStr2Num(str);//å°†å…¶è½¬åŒ–ä¸ºåè¿›åˆ¶  
+           if(m!=24){//é™¤äº†æœ€åŽä¸€ä½ï¼Œæ•°å­—åŽéƒ½è¦åŠ ç‚¹               
         	   ip.append(bi.toString());  
         	   ip.append(".");  
            }else{               
@@ -137,10 +165,10 @@ public class IPQueryAddress {
     }
     
     
-    //½«ip´®×ª»¯Îª32Î»³¤ÕûÐÎ    
+    //å°†ipä¸²è½¬åŒ–ä¸º32ä½é•¿æ•´å½¢    
     public static String ip2BinaryStr(String ip){
     	String[] ipArr = ip.split("\\.");
-    	//ÓÃÀ´³ÐÔØ×ª»»³É¶þ½øÖÆµÄip¶Î
+    	//ç”¨æ¥æ‰¿è½½è½¬æ¢æˆäºŒè¿›åˆ¶çš„ipæ®µ
     	StringBuffer ip32Str = new StringBuffer();
     	for(int i=0;i<4 && i<ipArr.length;i++){
     		ip32Str.append(numStr2BinaryStr(ipArr[i],1));
@@ -149,7 +177,22 @@ public class IPQueryAddress {
     	return ip32Str.toString();
     }
     
-    //½«ip´®Í¨¹ýÒ»¶¨µÄËã·¨µÃµ½Ò»¸öÎ¨Ò»µÄÊýÖµ´®ÓëipÒ»Ò»¶ÔÓ¦
+  //ä½¿ç”¨addressç±»å¯ä»¥ç›´æŽ¥å°†ipè½¬åŒ–ä¸ºå­—èŠ‚æ•°ç»„
+    public static byte[] ip2Bytes(String ip){
+        InetAddress address;
+        byte[] bytes = null;
+		try {
+			address = InetAddress.getByName(ip);// åœ¨ç»™å®šä¸»æœºåçš„æƒ…å†µä¸‹ç¡®å®šä¸»æœºçš„ IP å€ã€‚
+			bytes = address.getAddress();// è¿”å›žæ­¤ InetAddress å¯¹è±¡çš„åŽŸå§‹ IP åœ°å€
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return bytes;
+    }
+    
+    
+    //å°†ipä¸²é€šè¿‡ä¸€å®šçš„ç®—æ³•å¾—åˆ°ä¸€ä¸ªå”¯ä¸€çš„æ•°å€¼ä¸²ä¸Žipä¸€ä¸€å¯¹åº”
     public static String ip2NumStr(String ip){
     	String numStr = "";
     	String BinaryStr = ip2BinaryStr(ip);
@@ -158,48 +201,79 @@ public class IPQueryAddress {
     }
     
     
-    /***************************ÊýÖµ×Ö·û´®×ª»»³É×Ö½ÚÊý×é**********************************/
+    /***************************æ•°å€¼å­—ç¬¦ä¸²ä¸Žå­—èŠ‚æ•°ç»„çš„ç›¸äº’è½¬åŒ–**********************************/
     
-    //1.²âÊÔ´æÓÐ¶þ½øÖÆÎÄ¼þÀïÃæµÄÎ»ÒÆ²Ù×÷
-    //2.½«ipÊý¾Ý¿âÀïÃæÊý¾Ý×ö³É¶þ½øÖÆÎÄ¼þ¸ñÊ½
-    //3.²âÊÔ¶þ·Ö·¨²éÑ¯Ð§ÂÊ
-    //4.ºÍÊý¾Ý¿â²éÑ¯µÄÐ§ÂÊ×÷±È¶Ô£¬·ÖÎöÐÔÄÜ
+    //1.æµ‹è¯•å­˜æœ‰äºŒè¿›åˆ¶æ–‡ä»¶é‡Œé¢çš„ä½ç§»æ“ä½œ
+    //2.å°†ipæ•°æ®åº“é‡Œé¢æ•°æ®åšæˆäºŒè¿›åˆ¶æ–‡ä»¶æ ¼å¼
+    //3.æµ‹è¯•äºŒåˆ†æ³•æŸ¥è¯¢æ•ˆçŽ‡
+    //4.å’Œæ•°æ®åº“æŸ¥è¯¢çš„æ•ˆçŽ‡ä½œæ¯”å¯¹ï¼Œåˆ†æžæ€§èƒ½
    
-    //½«ËùÒª´¦ÀíµÄÊýÖµ´®²ð·Ö³ÉbyteÀàÐÍ
-    //s==ËùÒª´¦ÀíµÄÊýÖµ´®£¬i==sËùÕ¼µÄ×Ö½ÚÊý
+    //å°†æ‰€è¦å¤„ç†çš„æ•°å€¼ä¸²æ‹†åˆ†æˆbyteç±»åž‹
+    //s==æ‰€è¦å¤„ç†çš„æ•°å€¼ä¸²ï¼Œi==sæ‰€å çš„å­—èŠ‚æ•°
     //return byte[]
     public static byte[] numStr2ByteArr(String s,int i){
-    	//Ê×ÏÈ½«ÊýÖµ×Ö·û´®´¦Àí³É¶þ½øÖÆµÄ×Ö·û´®  8Î»/16Î»/24Î»/32Î»/...
+    	//é¦–å…ˆå°†æ•°å€¼å­—ç¬¦ä¸²å¤„ç†æˆäºŒè¿›åˆ¶çš„å­—ç¬¦ä¸²  8ä½/16ä½/24ä½/32ä½/...
     	String binaryStr = numStr2BinaryStr(s,i);
     	byte[] bytes = new byte[i];
-    	//ÔÙ½«¶þ½øÖÆ×Ö·û´´°´8Î»½øÐÐ·Ö¸î
+    	//å†å°†äºŒè¿›åˆ¶å­—ç¬¦åˆ›æŒ‰8ä½è¿›è¡Œåˆ†å‰²
     	for(int m=0; m<i; m++){          
-            String str = binaryStr.substring(m*8, m*8+8);//»ñÈ¡×Ö·û´®µÄ8Î»×Ö·û  
-            BigInteger bi = binaryStr2Num(str);//½«Æä×ª»¯ÎªÊ®½øÖÆ  
-            //È»ºó½«8Î»µÄ¶þ½øÖÆ×Ö·û´®´¦Àí³Éµ¥¸ö×Ö½Ú´æ·Å½ø×Ö½ÚÊý×éÖÐ
-            //(ÆÚ¼äÐèÒª½«8Î»¶þ½øÖÆ×ª»»³ÉµÄintÔÚ×ª»»³Ébyte£¬ÐèÒª×ö0~255µ½-128~127µÄÓ³Éä)
+            String str = binaryStr.substring(m*8, m*8+8);//èŽ·å–å­—ç¬¦ä¸²çš„8ä½å­—ç¬¦  
+            BigInteger bi = binaryStr2Num(str);//å°†å…¶è½¬åŒ–ä¸ºåè¿›åˆ¶  
+            //ç„¶åŽå°†8ä½çš„äºŒè¿›åˆ¶å­—ç¬¦ä¸²å¤„ç†æˆå•ä¸ªå­—èŠ‚å­˜æ”¾è¿›å­—èŠ‚æ•°ç»„ä¸­
+            //(æœŸé—´éœ€è¦å°†8ä½äºŒè¿›åˆ¶è½¬æ¢æˆçš„intåœ¨è½¬æ¢æˆbyteï¼Œéœ€è¦åš0~255åˆ°-128~127çš„æ˜ å°„)
             byte b = unextend(bi.intValue());
             bytes[m] = b;
     	}
     	return bytes;
     }
     
-    //return String ÊýÖµ×Ö·û´®
-    public static BigInteger byteArr2NumStr(byte[] b){
+    //return String æ•°å€¼å­—ç¬¦ä¸²
+    public static BigInteger byteArr2Num(byte[] b){
     	BigInteger num = null;
     	if(b.length>0){
     		int n = 0;
     		StringBuffer numStr = new StringBuffer("");
     		for(int i=0; i<b.length; i++){
-    			//Ê×ÏÈ½«Ã¿¸ö×Ö½Ú×ª³Éint (-128~127µ½0~255µÄÓ³Éä)
+    			//é¦–å…ˆå°†æ¯ä¸ªå­—èŠ‚è½¬æˆint (-128~127åˆ°0~255çš„æ˜ å°„)
     			n = extend(b[i]);
-    			//½«int×ª³É¶þ½øÖÆ½øÐÐÆ´½Ó    			
+    			//å°†intè½¬æˆäºŒè¿›åˆ¶è¿›è¡Œæ‹¼æŽ¥    			
     			numStr.append(numStr2BinaryStr(String.valueOf(n),1));
     		}
-    		//ÔÙ½«Æ´½ÓµÄ¶þ½øÖÆ×Ö·û´®×ª»»³ÉÊ®½øÖÆ
+    		//å†å°†æ‹¼æŽ¥çš„äºŒè¿›åˆ¶å­—ç¬¦ä¸²è½¬æ¢æˆåè¿›åˆ¶
     		num = binaryStr2Num(numStr.toString());
     	}
     	return num;
     }
     
+    
+    
+    
+    /****************æ•°å€¼å­—ç¬¦ä¸²ä¸Žå­—èŠ‚æ•°ç»„çš„ç›¸äº’è½¬åŒ–ä¼˜åŒ–ç‰ˆ****************/
+    //ç›¸æ¯”ä¸Šé¢çš„æ–¹æ³•ï¼Œè¯¥ç®—æ³•æ›´åŠ ç®€æ´
+    //byteArr2NumStrå‡çº§ç‰ˆ,æ›´åŠ ç®€æ´(é™åˆ¶4ä¸ªå­—èŠ‚ä»¥å†…)
+    public static BigInteger byteArr2Num_uv(byte[] b){
+    	long l = 0;
+    	int len = b.length < 4 ? b.length : 4;
+ 	    for (int i = 0; i < len; i++) {
+ 	        l |= (extend_uv(b[i])) << ((len-1-i) << 3);
+ 	    }
+ 	    long L = l & 0x7fffffffL;
+ 	    if (l < 0) {
+ 	    	L |= 0x080000000L;
+ 	    }
+ 	    return new BigInteger(String.valueOf(L));
+    }
+    //numStr2ByteArrå‡çº§ç‰ˆ,æ›´åŠ ç®€æ´(é™åˆ¶4ä¸ªå­—èŠ‚ä»¥å†…)
+    public static byte[] numStr2ByteArr_uv(String s,int i){
+    	byte[] b = null;
+    	if(isNumeric(s)){
+    		long n = Long.parseLong(s);
+    		b = new byte[i];
+    		int len = i < 4 ? i : 4;
+    		for (int k = 0; k < len; k++) {
+    			b[k] = unextend_uv((int)(n >> ((len-1-k) << 3)));
+    		}
+		}
+	    return b;
+    }
 }
