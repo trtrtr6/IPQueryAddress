@@ -1,13 +1,20 @@
 package test;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IPQueryAddress {
 	public static void main(String[] args) throws UnknownHostException{
@@ -34,32 +41,91 @@ public class IPQueryAddress {
 //		System.out.println(int2Byte(236));
 //		System.out.println(130<<24);
 
-		byte[] bytes = {-1,-1,-1,-1};
-		System.out.println(byteArr2Num_uv(bytes));
-		numStr2ByteArr_uv(byteArr2Num_uv(bytes)+"",4);
-		System.out.println(ip2NumStr("255.255.255.255"));
-
+//		byte[] bytes = {-1,-1,-1,-1};
+//		System.out.println(byteArr2Num_uv(bytes));
+//		numStr2ByteArr_uv(byteArr2Num_uv(bytes)+"",4);
+//		System.out.println(ip2NumStr("255.255.255.255"));
+//		Ips2NumsData();
+//		readToFile();
 //		System.out.println(bytes2Int(bytes));
 //		System.out.println();
 //		byte[] b = numStr2ByteArr("2030043143",4);
 
 	}
 	
-	//随机生成1000调ip数据，并利用二进制转化成数值字符串进行文件存储ip.txt
-	public static void randomIpData(){
-//		for(){
-//			
-//		}
+	//将ip.txt里面的ip数据，利用二进制转化成字节进行文件存储
+	@SuppressWarnings("resource")
+	public static void Ips2NumsData(){
+		File file = new File("d:/ip.txt");
+		File fileSort = new File("d:/ip-sort.txt");
+		String readStr;
+		List<String> list = new ArrayList<String>();
+		try {
+//			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+//			BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileSort)));
+//			while((readStr = bufferedReader.readLine())!= null){				
+//				String[] insertArr = readStr.split("   ");
+//				//利用二分法实现数组插入数据自动排序
+//				int len = list.size();
+//				if(len>1){
+//					int begin = 0;
+//					int end = len;					
+//					while(true){
+//						if(end-begin<2){
+//							long beginN = Long.parseLong(ip2NumStr((list.get(0).split("   "))[0]));
+//							if(begin == 0 && Long.parseLong(ip2NumStr(insertArr[0]))<beginN){
+//								list.add(0, readStr);
+//							}else{
+//								list.add(begin+1,readStr);
+//							}
+//							break;
+//						}
+//						int m = (end-begin)/2 + begin;
+//						long readM = Long.parseLong(ip2NumStr((list.get(m).split("   "))[0]));
+//						if(Long.parseLong(ip2NumStr(insertArr[0])) <= readM){
+//							end = m;
+//						}else{
+//							begin = m;
+//						}							
+//					}
+//				}else{
+//					list.add(readStr);
+//				}
+//			}
+//			bufferedReader.close();
+//			System.out.println(list.size());
+//			System.out.println(g);
+//			for(String str:list){
+//				bufferedWriter.write(str+"\n");
+//				//必须flush，要不然写入的数据可能不完整
+//				bufferedWriter.flush();
+//			}
+//			bufferedWriter.close();
+			BufferedReader bufferedReaderSort = new BufferedReader(new InputStreamReader(new FileInputStream(fileSort)));
+			while((readStr = bufferedReaderSort.readLine())!= null){
+				String[] readArr = readStr.split("   ");
+				for(String s:readArr){
+					writeToFile(s);
+				}
+			}
+			bufferedReaderSort.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
-	//读取ip文件中的ip数据
-	public static void writeToFile(){
+	
+	//TODO 需要重新处理，目前的数据未排序，影响二分法的执行
+	//读取ip文件中的ip数据   
+	public static void writeToFile(String ip){
 		File file = new File("d:/ip-data.dat");
 		try {
 			FileOutputStream out = new FileOutputStream(file,true);
 			byte[] bytes = new byte[4];
-			bytes = numStr2ByteArr("2030043143",4);			
+			bytes = ip2Bytes(ip);
 			out.write(bytes,0,4);
+			out.flush();
 			out.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -73,12 +139,14 @@ public class IPQueryAddress {
 	public static void readToFile(){
 		File file = new File("d:/ip-data.dat");
 		try {
-			FileInputStream in = new FileInputStream(file);
+			RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+			randomAccessFile.seek(8);
 			byte[] bytes = new byte[4];
-			in.read(bytes);
-			BigInteger num = byteArr2Num(bytes);
-			in.close();
-			System.out.println(num.toString());
+			randomAccessFile.read(bytes);
+			BigInteger num = byteArr2Num_uv(bytes);
+			String ip = BinaryStr2Ip(numStr2BinaryStr(num.toString(),4));
+			System.out.println("ip:"+ip);
+			randomAccessFile.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -94,7 +162,6 @@ public class IPQueryAddress {
     //将二进制的(8/16/24/32/...)位长整形字符串转为十进制数值串
     public static BigInteger binaryStr2Num(String binaryStr){
     	BigInteger num = new BigInteger(binaryStr,2);
-    	System.out.println("num:" + num);
     	return num;
     }
     
@@ -108,7 +175,6 @@ public class IPQueryAddress {
     			binaryStr.append(num>>(bit-1-k) & 1);
     		}    		
     	}
-    	System.out.println("binaryStr:" + binaryStr);
     	return binaryStr.toString();
     }
        
@@ -173,7 +239,7 @@ public class IPQueryAddress {
     	for(int i=0;i<4 && i<ipArr.length;i++){
     		ip32Str.append(numStr2BinaryStr(ipArr[i],1));
     	}
-    	System.out.println("ip32Str:" + ip32Str);
+//    	System.out.println("ip32Str:" + ip32Str);
     	return ip32Str.toString();
     }
     
