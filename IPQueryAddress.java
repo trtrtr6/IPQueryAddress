@@ -52,13 +52,16 @@ public class IPQueryAddress {
 				"218.99.99.1","121.26.172.69","218.99.33.0","218.99.36.1"};
 		
 		long beginTime = System.currentTimeMillis();
-		for(int i=0;i<ipArr.length;i++){
-			boolean flag = IPDivisionQuery(file,ipArr[i]);		
-			System.out.println(flag);
+		for(int j=0;j<20;j++){	
+			for(int i=0;i<ipArr.length;i++){
+				boolean flag = IPDivisionQuery(file,ipArr[i]);		
+				System.out.println(flag);
+			}
 		}
 		long endTime = System.currentTimeMillis();
 		System.out.println("所用时间为：" + (endTime-beginTime)/1000.00 + " 秒");
-
+		
+		//整理代码
 	}
 	
 	//ip二分法查找
@@ -68,37 +71,33 @@ public class IPQueryAddress {
 		long num = 0;
 		if(isNumeric(numStr)){
 			num = Long.parseLong(numStr);			
-		}
-		
+		}		
 		//二分法,初始化begin和end变量的值
 		long begin = 0;
 		long end = file.length();
 		while(true){
 			if(end-begin<=8){
-				//已经获取到了ip所在的区间段
-				BigInteger targetBegin = readToFile(file,begin,4);
-				BigInteger targetEnd = readToFile(file,begin+4,4);
-				String targetBeginIp = BinaryStr2Ip(numStr2BinaryStr(targetBegin.toString(),4));
-				String targetEndIp = BinaryStr2Ip(numStr2BinaryStr(targetEnd.toString(),4));
-				System.out.println("该ip在    "+targetBeginIp+" ~ "+targetEndIp+" 之间");
-				return true;
+				break;
 			}
 			long m = ((end-begin)/8/2)*8 + begin;
 			System.out.println(m);
 			BigInteger middle= readToFile(file,m,4);
 			if(num == middle.longValue()){
-				BigInteger targetBegin = readToFile(file,m,4);
-				BigInteger targetEnd = readToFile(file,m+4,4);
-				String targetBeginIp = BinaryStr2Ip(numStr2BinaryStr(targetBegin.toString(),4));
-				String targetEndIp = BinaryStr2Ip(numStr2BinaryStr(targetEnd.toString(),4));
-				System.out.println("该ip在    "+targetBeginIp+" ~ "+targetEndIp+" 之间");
-				return true;
+				begin = m;
+				break;
 			}else if(num > middle.longValue()){
 				begin = m;
 			}else{
 				end = m;
 			}
 		}
+		//已经获取到了ip所在的区间段
+		BigInteger targetBegin = readToFile(file,begin,4);
+		BigInteger targetEnd = readToFile(file,begin+4,4);
+		String targetBeginIp = BinaryStr2Ip(numStr2BinaryStr(targetBegin.toString(),4));
+		String targetEndIp = BinaryStr2Ip(numStr2BinaryStr(targetEnd.toString(),4));
+		System.out.println("该ip在    "+targetBeginIp+" ~ "+targetEndIp+" 之间");
+		return true;
 	}
 	
 	//将ip.txt里面的ip数据，利用二进制转化成字节进行文件存储
